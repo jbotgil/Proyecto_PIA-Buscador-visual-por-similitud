@@ -1,0 +1,9 @@
+Tengo una carpeta assets con fotos, cada foto tiene un nombre único
+
+Al encender el programa debe hacer una carga inicial, debe hacer una llamada a la api de Azure para generar los tags de cada foto,
+una vez extraidos los tags guardaremos en un diccionario 
+                                        {key -> nombreImagen : valor -> [tags]}
+
+Despues de la carga inicial, le mostraremos textos e inputs para que pueda introducir una foto y un boton para que pueda lanzar 
+el proceso de deteccion de similitudes.
+El input de la imagen podría estar ligado a un chace de streamlit para mejorar el rendimiento.
