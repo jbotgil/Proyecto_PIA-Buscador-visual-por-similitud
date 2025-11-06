@@ -41,11 +41,7 @@ load_dotenv()
 SPEECH_KEY = os.getenv("SPEECH_KEY")
 REGION = os.getenv("REGION")
 
-st.title("🗣️ Síntesis de voz")
-
-
-st.title("Proyecto Final: Generador de similitudes a traves de una imagen")
-
+st.title("Proyecto Final:🖼️ Buscador visual por similitud")
 
 col1, col2 = st.columns(2)
 
@@ -66,14 +62,13 @@ params = {
 }
 
 
-# TODO:
+
 # - 1 Indexar imagenes de assets/
 # Recorrer la carpeta y leer las rutas de las imágenes.
 indexador = IndexImagenesController(
         assets_dir="assets",           # ruta a la carpeta de imágenes
         output_file="image_index.json"  # salida JSON en raíz del proyecto
 )
-
 indexador.crear_index()
 
 
