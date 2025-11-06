@@ -23,9 +23,16 @@
 # - Búsqueda por texto (“playa al atardecer”).
 
 
-import requests, os
+
+import requests, os, sys
 from dotenv import load_dotenv
 import streamlit as st
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
+    
+from controller.IndexImageController import IndexImagenesController
 
 # Carga las variables del archivo .env (solo en local)
 load_dotenv()
@@ -58,47 +65,16 @@ params = {
     'language': 'es',
 }
 
-# # Solicitamos una imagen
-# with col1:
-#     imagen = st.file_uploader("Introduce una imagen:", type=['png', 'jpg'])
-# with col2:
-#     if imagen is not None:
-#         st.image(imagen, caption="Vista previa", use_container_width=True)
-#     else:
-#         st.text("No has introducido ninguna imagen")
-        
-# botonSubmit = st.button("Analizar imagen:")
-
-# # Una vez introducida la imagen
-# if botonSubmit:
-#     if imagen is not None:
-#         image_data = imagen.read()
-
-#         try:
-#             response = requests.post(
-#                 endpoint,
-#                 headers=headers,
-#                 params=params,
-#                 data=image_data
-#             )
-#             response.raise_for_status()
-
-#             result = response.json()
-#             st.json(result) 
-            
-#             captions = result['tags']
-#             for caption in captions:
-#                 st.success(f"{caption['name']} (confianza: {caption['confidence']:.2%})")
-            
-#         except Exception as ex:
-#             st.error(f"Error al analizar la imagen: {ex}")
-#     else:
-#         st.error("No has introducido ninguna imagen.")
-
 
 # TODO:
 # - 1 Indexar imagenes de assets/
-# Recorrer la carpeta y leer las rutas de las imágenes. Con os.listdir() o glob en Python basta.
+# Recorrer la carpeta y leer las rutas de las imágenes.
+indexador = IndexImagenesController(
+        assets_dir="assets",           # ruta a la carpeta de imágenes
+        output_file="image_index.json"  # salida JSON en raíz del proyecto
+)
+
+indexador.crear_index()
 
 
 # TODO:
