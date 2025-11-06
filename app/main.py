@@ -94,3 +94,43 @@ params = {
 #             st.error(f"Error al analizar la imagen: {ex}")
 #     else:
 #         st.error("No has introducido ninguna imagen.")
+
+
+# TODO:
+# - 1 Indexar imagenes de assets/
+# Recorrer la carpeta y leer las rutas de las imágenes. Con os.listdir() o glob en Python basta.
+
+
+# TODO:
+# - 2 Obtener embeddings o tags
+# Usar modelos preentrenados que generan vectores de características visuales, por ejemplo:
+# CLIP (de OpenAI, vía open_clip o transformers)
+# ResNet50 (desde torchvision.models)
+# ViT (Vision Transformer)
+# Cada imagen → un vector numérico (embedding).
+
+
+# TODO:
+# - 3 Almacenar en vector DB (FAISS u otra)
+# Utilizar FAISS para indexar los embeddings y permitir búsquedas rápidas por similitud.
+
+
+# TODO:
+# - 4 Utilizar top-k similitud
+# FAISS te permite buscar los k más similares
+
+
+# TODO:
+# - 5 Implementar búsqueda por similitud
+# Pasar una imagen de consulta, generar su embedding y comparar con FAISS.
+
+
+# TODO:
+# - 6 Mostrar resultados en grid UI
+# Usar Streamlit para mostrar las imágenes similares en una cuadrícula.
+
+
+
+st.markdown("---")
+st.markdown("© 2025 - Proyecto de Programación de Inteligencia Artificial: Buscador visual por similitud")
+st.markdown("Desarrollado por [Jbotgil][https://github.com/jbotgil]")
