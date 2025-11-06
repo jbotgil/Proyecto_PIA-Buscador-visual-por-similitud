@@ -22,8 +22,6 @@
 # - Filtro por etiquetas.
 # - Búsqueda por texto (“playa al atardecer”).
 
-
-
 import requests, os, sys
 from dotenv import load_dotenv
 import streamlit as st
@@ -65,11 +63,16 @@ params = {
 
 # - 1 Indexar imagenes de assets/
 # Recorrer la carpeta y leer las rutas de las imágenes.
-indexador = IndexImagenesController(
-        assets_dir="assets",           # ruta a la carpeta de imágenes
-        output_file="image_index.json"  # salida JSON en raíz del proyecto
-)
-indexador.crear_index()
+with st.spinner('🔍 Indexando imágenes, por favor espera...'):
+    try:
+        indexador = IndexImagenesController(
+            assets_dir="assets",
+            output_file="image_index.json"
+        )
+        indexador.crear_index()
+    except Exception as e:
+        st.error(f"❌ Error al indexar imágenes: {e}")
+
 
 
 # TODO:
@@ -101,7 +104,6 @@ indexador.crear_index()
 # Usar Streamlit para mostrar las imágenes similares en una cuadrícula.
 
 
-
 st.markdown("---")
 st.markdown("© 2025 - Proyecto de Programación de Inteligencia Artificial: Buscador visual por similitud")
-st.markdown("Desarrollado por [Jbotgil][https://github.com/jbotgil]")
+st.markdown("Desarrollado por [jbotgil] [https://github.com/jbotgil]")
