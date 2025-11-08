@@ -20,7 +20,7 @@ class VectorDBController:
         return self.embeddings
 
     def crear_faiss_index(self):
-        if not self.embeddings:
+        if self.embeddings is None or len(self.embeddings) == 0:
             self.cargar_embeddings()
 
         d = self.embeddings.shape[1]  # Dimensión del embedding (por ej. 512)

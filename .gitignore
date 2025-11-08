@@ -8,3 +8,4 @@
 dist/
 build/
 image_index.json
+faiss_index.bin
