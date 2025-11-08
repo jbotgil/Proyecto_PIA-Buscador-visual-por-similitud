@@ -35,17 +35,15 @@ from controller.IndexImageController import IndexImagenesController
 # Carga las variables del archivo .env (solo en local)
 load_dotenv()
 
-# 🔐 Configuración Azure Speech
-SPEECH_KEY = os.getenv("SPEECH_KEY")
-REGION = os.getenv("REGION")
+# Configuraciones de API de: 
+subscription_key = os.getenv("SUBSCRIPTION_KEY")
+endpoint = os.getenv("ENDPOINT")
 
 st.title("Proyecto Final:🖼️ Buscador visual por similitud")
 
 col1, col2 = st.columns(2)
 
-# Configuraciones de API de: 
-subscription_key = os.getenv("SBSCRIPTION_KEY")
-endpoint = os.getenv("ENDPOINT")
+
 
 # Request headers.
 headers = {
@@ -61,7 +59,7 @@ params = {
 
 
 
-# - 1 Indexar imagenes de assets/
+# *- 1 Indexar imagenes de assets/
 # Recorrer la carpeta y leer las rutas de las imágenes.
 with st.spinner('🔍 Indexando imágenes, por favor espera...'):
     try:
@@ -73,9 +71,7 @@ with st.spinner('🔍 Indexando imágenes, por favor espera...'):
     except Exception as e:
         st.error(f"❌ Error al indexar imágenes: {e}")
 
-
-
-# TODO:
+# TODO: 
 # - 2 Obtener embeddings o tags
 # Usar modelos preentrenados que generan vectores de características visuales, por ejemplo:
 # CLIP (de OpenAI, vía open_clip o transformers)

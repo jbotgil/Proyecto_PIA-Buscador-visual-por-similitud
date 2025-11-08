@@ -1,39 +1,43 @@
-import json
-from pathlib import Path
+from transformers import CLIPProcessor, CLIPModel  # Modelo CLIP de Hugging Face: genera embeddings de imágenes y texto
+from PIL import Image                              # Librería Pillow para abrir y procesar imágenes
+import torch                                       # PyTorch: ejecuta el modelo CLIP y operaciones con tensores
+import os, json                                    # os: manejo de rutas y archivos / json: guardar y cargar embeddings
+from tqdm import tqdm                              # Barra de progreso para visualizar el avance al indexar imágenes
+
 
 class IndexImagenesController:
     def __init__(self, assets_dir="assets", output_file="image_index.json"):
-        """
-        Controlador para indexar imágenes dentro de la carpeta 'assets'.
-        Guarda un archivo JSON con id, path y filename.
-        """
-        # Siempre partimos desde la raíz del proyecto
-        self.root_dir = Path(__file__).resolve().parents[1]
-        self.assets_dir = self.root_dir / assets_dir
-        self.output_file = self.root_dir / output_file
-        self.extensiones_validas = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tiff"}
+        self.assets_dir = assets_dir
+        self.output_file = output_file
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        
+        # Carga modelo CLIP preentrenado (base)
+        self.model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(self.device)
+        self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
     def crear_index(self):
-        """Genera un índice JSON de todas las imágenes dentro de la carpeta assets."""
-        if not self.assets_dir.exists():
-            print(f"❌ Carpeta no encontrada: {self.assets_dir}")
-            return
+        image_data = []
 
-        index = []
-        id_counter = 0
+        for img_name in tqdm(os.listdir(self.assets_dir)): # Genera barra de prograso
+            if img_name.lower().endswith(('.jpg', '.jpeg', '.png')):
+                img_path = os.path.join(self.assets_dir, img_name)
+                image = Image.open(img_path).convert("RGB")
 
-        for p in self.assets_dir.rglob("*"):
-            if p.is_file() and p.suffix.lower() in self.extensiones_validas:
-                entry = {
-                    "id": id_counter,
-                    "path": str(p.relative_to(self.root_dir).as_posix()),
-                    "filename": p.name
-                }
-                index.append(entry)
-                id_counter += 1
+                # Generar embedding CLIP
+                inputs = self.processor(images=image, return_tensors="pt").to(self.device)
+                with torch.no_grad():
+                    image_features = self.model.get_image_features(**inputs) # Extrae características de la imagen
 
-        with open(self.output_file, "w", encoding="utf-8") as f:
-            json.dump(index, f, ensure_ascii=False, indent=2)
+                # Normalizar el vector
+                image_features = image_features / image_features.norm(p=2)
+                embedding = image_features.cpu().numpy().flatten().tolist()
 
-        print(f"✅ Index creado: {self.output_file} ({len(index)} imágenes)")
-        return index
+                image_data.append({
+                    "path": img_path,
+                    "embedding": embedding
+                })
+
+        # Guardar embeddings
+        with open(self.output_file, "w") as f:
+            json.dump(image_data, f, indent=2)
+        print(f"✅ Index creado con {len(image_data)} imágenes.")
