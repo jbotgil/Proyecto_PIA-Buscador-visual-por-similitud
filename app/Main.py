@@ -105,11 +105,23 @@ if uploaded_file is not None:
 
     # Buscar similares con FAISS
     with st.spinner("Buscando imágenes más parecidas..."):
-        resultados = vector_db.buscar_similares(query_embedding, top_k=5)
+        resultados = vector_db.buscar_similares(query_embedding, top_k=10)
 
 # TODO:
 # *- 6 Mostrar resultados en grid UI
 # Usar Streamlit para mostrar las imágenes similares en una cuadrícula.
+if uploaded_file is not None and resultados:
+    st.subheader("🖼️ Imágenes más similares encontradas:")
+
+    # Crear una cuadrícula de columnas dinámicas según el número de resultados
+    num_cols = min(len(resultados), 10) 
+    cols = st.columns(num_cols)
+
+    for i, res in enumerate(resultados):
+        col = cols[i % num_cols]  # distribuir las imágenes en la cuadrícula
+        with col:
+            st.image(res["path"], use_container_width=True)
+            st.caption(f"🔹 Score: {res['score']:.4f}")
 
 
 st.markdown("---")
