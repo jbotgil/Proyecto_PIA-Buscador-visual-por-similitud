@@ -1,6 +1,4 @@
 streamlit
-requests
-dotenv
 transformers
 torch
 Pillow
