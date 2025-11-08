@@ -31,6 +31,7 @@ if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
     
 from controller.IndexImageController import IndexImagenesController
+from controller.VectorDBController import VectorDBController
 
 # Carga las variables del archivo .env (solo en local)
 load_dotenv()
@@ -61,6 +62,12 @@ params = {
 
 # *- 1 Indexar imagenes de assets/
 # Recorrer la carpeta y leer las rutas de las imágenes.
+# *- 2 Obtener embeddings o tags
+# Usar modelos preentrenados que generan vectores de características visuales, por ejemplo:
+# CLIP (de OpenAI, vía open_clip o transformers)
+# ResNet50 (desde torchvision.models)
+# ViT (Vision Transformer)
+# Cada imagen → un vector numérico (embedding).
 with st.spinner('🔍 Indexando imágenes, por favor espera...'):
     try:
         indexador = IndexImagenesController(
@@ -71,23 +78,21 @@ with st.spinner('🔍 Indexando imágenes, por favor espera...'):
     except Exception as e:
         st.error(f"❌ Error al indexar imágenes: {e}")
 
-# TODO: 
-# - 2 Obtener embeddings o tags
-# Usar modelos preentrenados que generan vectores de características visuales, por ejemplo:
-# CLIP (de OpenAI, vía open_clip o transformers)
-# ResNet50 (desde torchvision.models)
-# ViT (Vision Transformer)
-# Cada imagen → un vector numérico (embedding).
-
-
-# TODO:
-# - 3 Almacenar en vector DB (FAISS u otra)
+# *- 3 Almacenar en vector DB (FAISS u otra)
 # Utilizar FAISS para indexar los embeddings y permitir búsquedas rápidas por similitud.
-
-
-# TODO:
-# - 4 Utilizar top-k similitud
+# *- *4 Utilizar top-k similitud
 # FAISS te permite buscar los k más similares
+with st.spinner('📦 Creando índice FAISS...'):
+    try:
+        vector_db = VectorDBController(
+            index_file="image_index.json",
+            faiss_index_file="faiss_index.bin"
+        )
+        vector_db.cargar_embeddings()
+        vector_db.crear_faiss_index()
+        st.success("✅ Índice FAISS creado con éxito.")
+    except Exception as e:
+        st.error(f"❌ Error al crear índice FAISS: {e}")
 
 
 # TODO:

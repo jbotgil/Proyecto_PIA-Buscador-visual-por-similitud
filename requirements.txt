@@ -1,3 +1,9 @@
 streamlit
 requests
 dotenv
+transformers
+torch
+Pillow
+tqdm
+numpy
+faiss-cpu
