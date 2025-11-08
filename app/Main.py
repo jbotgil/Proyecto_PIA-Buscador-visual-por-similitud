@@ -1,27 +1,5 @@
 ### 7) 🖼️ Buscador visual por similitud (10)
 
-# **Objetivo:** Dada una imagen, encontrar similares por embeddings o etiquetas.
-
-# **Mínimos**
-# - Dataset local (assets/).
-# - Indexación por embeddings/tags.
-# - Consulta: top-k similares con score.
-
-# **Arquitectura**
-# - Preproceso → embeddings (CLIP/Vision) → vector store → similitud → grid UI.
-
-# **APIs/Modelos**
-# - Azure: Vision (tags) + (opcional) embeddings con Azure OpenAI (CLIP-like).
-# - Alternativas: HF openai/clip-vit-base-patch32; Google Vision labels.
-
-# **Páginas**
-# - “Indexar”.
-# - “Buscar”.
-
-# **Ampliaciones**
-# - Filtro por etiquetas.
-# - Búsqueda por texto (“playa al atardecer”).
-
 import requests, os, sys
 from dotenv import load_dotenv
 import streamlit as st
@@ -39,26 +17,31 @@ from controller.VectorDBController import VectorDBController
 # Carga las variables del archivo .env (solo en local)
 load_dotenv()
 
-# Inicializar modelo CLIP
-device = "cuda" if torch.cuda.is_available() else "cpu"
-model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
-processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-
-# Inicializar FAISS
-vector_db = VectorDBController()
-
-
-
 st.title("Proyecto Final:🖼️ Buscador visual por similitud")
 
-# *- 1 Indexar imagenes de assets/
-# Recorrer la carpeta y leer las rutas de las imágenes.
-# *- 2 Obtener embeddings o tags
-# Usar modelos preentrenados que generan vectores de características visuales, por ejemplo:
-# CLIP (de OpenAI, vía open_clip o transformers)
-# ResNet50 (desde torchvision.models)
-# ViT (Vision Transformer)
-# Cada imagen → un vector numérico (embedding).
+
+#* 1️ Cachear y cargar modelo CLIP
+@st.cache_resource
+def cargar_modelo_clip():
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
+    processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+    return model, processor, device
+
+model, processor, device = cargar_modelo_clip()
+
+#* 2️ Cachear generación de embeddings de imagen
+@st.cache_data(show_spinner=False)
+def generar_embedding_imagen(image_bytes):
+
+    image = Image.open(image_bytes).convert("RGB")
+    inputs = processor(images=image, return_tensors="pt").to(device)
+    with torch.no_grad():
+        query_features = model.get_image_features(**inputs)
+    query_features = query_features / query_features.norm(p=2)
+    return query_features.cpu().numpy().flatten().tolist()
+
+#* 3️ Indexar imágenes con CLIP
 with st.spinner('🔍 Indexando imágenes, por favor espera...'):
     try:
         indexador = IndexImagenesController(
@@ -69,10 +52,7 @@ with st.spinner('🔍 Indexando imágenes, por favor espera...'):
     except Exception as e:
         st.error(f"❌ Error al indexar imágenes: {e}")
 
-# *- 3 Almacenar en vector DB (FAISS u otra)
-# Utilizar FAISS para indexar los embeddings y permitir búsquedas rápidas por similitud.
-# *- *4 Utilizar top-k similitud
-# FAISS te permite buscar los k más similares
+#* 4️ Crear índice FAISS
 with st.spinner('📦 Creando índice FAISS...'):
     try:
         vector_db = VectorDBController(
@@ -85,44 +65,31 @@ with st.spinner('📦 Creando índice FAISS...'):
     except Exception as e:
         st.error(f"❌ Error al crear índice FAISS: {e}")
 
-
-# *- 5 Implementar búsqueda por similitud
-# Pasar una imagen de consulta, generar su embedding y comparar con FAISS.
-# Subir imagen de consulta
+#* 5️ Subir imagen de consulta y generar embedding
 uploaded_file = st.file_uploader("Sube una imagen para buscar similares", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="📷 Imagen de consulta", width=300)
+    st.image(Image.open(uploaded_file), caption="📷 Imagen de consulta", width=300)
 
-    # Generar embedding con CLIP
+    # Generar embedding cacheado
     with st.spinner("Generando embedding de la imagen..."):
-        inputs = processor(images=image, return_tensors="pt").to(device)
-        with torch.no_grad():
-            query_features = model.get_image_features(**inputs)
-        query_features = query_features / query_features.norm(p=2)
-        query_embedding = query_features.cpu().numpy().flatten().tolist()
+        query_embedding = generar_embedding_imagen(uploaded_file)
 
     # Buscar similares con FAISS
     with st.spinner("Buscando imágenes más parecidas..."):
         resultados = vector_db.buscar_similares(query_embedding, top_k=10)
 
-# TODO:
-# *- 6 Mostrar resultados en grid UI
-# Usar Streamlit para mostrar las imágenes similares en una cuadrícula.
-if uploaded_file is not None and resultados:
-    st.subheader("🖼️ Imágenes más similares encontradas:")
+    #* 6️ Mostrar resultados en grid UI
+    if resultados:
+        st.subheader("🖼️ Imágenes más similares encontradas:")
+        num_cols = min(len(resultados), 10)
+        cols = st.columns(num_cols)
 
-    # Crear una cuadrícula de columnas dinámicas según el número de resultados
-    num_cols = min(len(resultados), 10) 
-    cols = st.columns(num_cols)
-
-    for i, res in enumerate(resultados):
-        col = cols[i % num_cols]  # distribuir las imágenes en la cuadrícula
-        with col:
-            st.image(res["path"], use_container_width=True)
-            st.caption(f"🔹 Score: {res['score']:.4f}")
-
+        for i, res in enumerate(resultados):
+            col = cols[i % num_cols]  # distribuir las imágenes en la cuadrícula
+            with col:
+                st.image(res["path"], use_container_width=True)
+                st.caption(f"🔹 Score: {res['score']:.4f}")
 
 st.markdown("---")
 st.markdown("© 2025 - Proyecto de Programación de Inteligencia Artificial: Buscador visual por similitud")

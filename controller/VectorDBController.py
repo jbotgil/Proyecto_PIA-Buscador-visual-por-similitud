@@ -11,6 +11,7 @@ class VectorDBController:
         self.paths = []
         self.index = None
 
+
     def cargar_embeddings(self):
         # Carga los embeddings previamente generados por CLIP
         with open(self.index_file, "r") as f:
