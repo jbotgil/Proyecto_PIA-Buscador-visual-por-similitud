@@ -2,6 +2,7 @@ import faiss  # Librería para búsquedas vectoriales eficientes
 import numpy as np
 import json
 
+
 class VectorDBController:
     def __init__(self, index_file="image_index.json", faiss_index_file="faiss_index.bin"):
         self.index_file = index_file
