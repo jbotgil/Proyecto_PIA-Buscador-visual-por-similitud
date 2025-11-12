@@ -7,3 +7,5 @@
 .git
 dist/
 build/
+faiss_index.bin
+image_index.json

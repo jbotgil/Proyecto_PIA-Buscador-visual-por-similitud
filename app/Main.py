@@ -4,6 +4,7 @@ import torch
 from transformers import CLIPProcessor, CLIPModel
 from PIL import Image
 import sys
+import tempfile
 
 # Base del proyecto
 BASE_DIR = Path(__file__).resolve().parent.parent  # /app
@@ -80,14 +81,15 @@ vector_db = cargar_vector_db()
 uploaded_file = st.file_uploader("Sube una imagen para buscar similares", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    save_path = assets_dir / uploaded_file.name
-    assets_dir.mkdir(exist_ok=True)
-    with open(save_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
+    # Crear archivo temporal en Linux
+    with tempfile.NamedTemporaryFile(delete=False, suffix=Path(uploaded_file.name).suffix) as tmp_file:
+        tmp_file.write(uploaded_file.getbuffer())
+        tmp_path = Path(tmp_file.name)
 
-    st.image(save_path, caption="📷 Imagen subida", use_container_width=True)
+    st.image(tmp_path, caption="📷 Imagen subida", use_container_width=True)
 
-    query_embedding = generar_embedding_imagen(save_path)
+    # Generar embedding y buscar similares
+    query_embedding = generar_embedding_imagen(tmp_path)
     resultados = vector_db.buscar_similares(query_embedding, top_k=10)
 
     if resultados:
@@ -95,7 +97,7 @@ if uploaded_file is not None:
         num_cols = min(len(resultados), 10)
         cols = st.columns(num_cols)
         for i, res in enumerate(resultados):
-            img_path = Path(res["path"])  # usar tal cual
+            img_path = Path(res["path"])
             if img_path.exists():
                 with cols[i % num_cols]:
                     st.image(img_path, use_container_width=True)
