@@ -90,11 +90,6 @@ docker run -d -p 8501:8501 jbotgil/proyecto-pia-buscador-similitud
 
 ---
 
-## 🪪 Licencia
-MIT — libre para uso y modificación.
-
----
-
 ## ‼️Inconvenientes
 Inconvenientes que he tenido que solventar para poder entregar este proyecto
 - Problema con las rutas
@@ -103,6 +98,11 @@ Inconvenientes que he tenido que solventar para poder entregar este proyecto
 - Tamaño de la imagen docker (por las librerias utilizadas)
 - Tiempo de ejecución por cada error
 - Deploy a Azure
+
+---
+
+## 🪪 Licencia
+MIT — libre para uso y modificación.
 
 ---
 
