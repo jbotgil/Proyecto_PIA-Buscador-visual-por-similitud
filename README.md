@@ -95,6 +95,17 @@ MIT — libre para uso y modificación.
 
 ---
 
+## ‼️Inconvenientes
+Inconvenientes que he tenido que solventar para poder entregar este proyecto
+- Problema con las rutas
+- Tiempo de creacion de imagen docker
+- Tiempo de subida a docker hub
+- Tamaño de la imagen docker (por las librerias utilizadas)
+- Tiempo de ejecución por cada error
+- Deploy a Azure
+
+---
+
 ## 👨‍💻 Autor
 **Javier Botella Gil** — estudiante y desarrollador.  
 GitHub: [@jbotgil](https://github.com/jbotgil)
