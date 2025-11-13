@@ -86,7 +86,9 @@ Para lanzar la aplicación desde Docker, ejecuta el siguiente comando:
 
 ```bash
 docker run -d -p 8501:8501 jbotgil/proyecto-pia-buscador-similitud
+```
 
+---
 
 ## 🪪 Licencia
 MIT — libre para uso y modificación.
